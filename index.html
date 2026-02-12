@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TENWEK SMART LIBRARY AI - 2026</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+      :root {
+        --primary: #2fc036; /* Agri Green */
+        --dark: #0a0a0a;
+        --surface: #1e1e1e;
+        --accent: #fbc02d; /* Gold */
+        --danger: #d32f2f;
+        --text: #ffffff;
+        --shelf-color: #333;
+        --shelf-active: #2fc036;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", sans-serif;
+        background: var(--dark);
+        color: var(--text);
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      /* HEADER */
+      header {
+        background: var(--primary);
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+      }
+      h1 {
+        font-size: 1.1rem;
+        margin: 0;
+      }
+      .lang-toggle {
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        border-radius: 20px;
+        padding: 5px 10px;
+        cursor: pointer;
+        font-size: 0.8rem;
+      }
+
+      /* INTERACTIVE MAP */
+      .library-map {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        padding: 10px;
+        background: #111;
+        border-bottom: 1px solid #333;
+      }
+      .shelf {
+        background: var(--shelf-color);
+        padding: 15px 5px;
+        text-align: center;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        color: #888;
+        border: 1px solid #444;
+        transition: all 0.3s ease;
+      }
+      .shelf.active {
+        background: var(--shelf-active);
+        color: white;
+        font-weight: bold;
+        box-shadow: 0 0 10px var(--primary);
+        transform: scale(1.05);
+      }
+
+      /* CHAT AREA */
+      #chat-window {
+        flex: 1;
+        overflow-y: auto;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+      .msg {
+        max-width: 85%;
+        padding: 10px 15px;
+        border-radius: 15px;
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
+      .user {
+        align-self: flex-end;
+        background: linear-gradient(135deg, #1b5e20, #004d40);
+        border-bottom-right-radius: 2px;
+      }
+      .ai {
+        align-self: flex-start;
+        background: var(--surface);
+        border: 1px solid #333;
+        border-left: 4px solid var(--primary);
+      }
+
+      /* QUICK CHIPS */
+      .chips {
+        display: flex;
+        gap: 8px;
+        padding: 10px 15px;
+        overflow-x: auto;
+        white-space: nowrap;
+        background: #111;
+      }
+      .chip {
+        background: #333;
+        border: 1px solid #555;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        cursor: pointer;
+      }
+      .chip:hover {
+        background: var(--primary);
+        border-color: var(--primary);
+      }
+
+      /* INPUT AREA */
+      .input-area {
+        background: var(--surface);
+        padding: 15px;
+        border-top: 2px solid var(--primary);
+      }
+      .input-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      input[type="text"] {
+        flex: 1;
+        padding: 12px;
+        border-radius: 25px;
+        border: 1px solid #444;
+        background: #222;
+        color: white;
+        outline: none;
+      }
+      button.send {
+        background: var(--primary);
+        border: none;
+        padding: 0 20px;
+        border-radius: 25px;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      /* TOOLBAR */
+      .toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.8rem;
+        color: #aaa;
+      }
+      .toggle-group {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      /* ADMIN MENU */
+      .dropdown {
+        position: relative;
+        display: inline-block;
+      }
+      .drop-content {
+        display: none;
+        position: absolute;
+        bottom: 30px;
+        right: 0;
+        background: #222;
+        min-width: 180px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        padding: 10px;
+        border-radius: 8px;
+        z-index: 100;
+        border: 1px solid #444;
+      }
+      .dropdown:hover .drop-content {
+        display: block;
+      }
+      .drop-content button {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        background: #333;
+        border: none;
+        color: white;
+        text-align: left;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+      .drop-content button:hover {
+        background: #444;
+      }
+
+      /* ANIMATIONS */
+      .dots::after {
+        content: "...";
+        animation: d 1.5s infinite;
+      }
+      @keyframes d {
+        0% {
+          content: ".";
+        }
+        33% {
+          content: "..";
+        }
+        66% {
+          content: "...";
+        }
+      }
+
+      /* Markdown Styles */
+      .msg ul {
+        padding-left: 20px;
+        margin: 5px 0;
+      }
+      .msg strong {
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>THS Library AI</h1>
+        <small id="statusText" style="color: #aaa; font-size: 0.7rem"
+          >Student Mode</small
+        >
+      </div>
+      <select id="langSelect" class="lang-toggle" onchange="changeLang()">
+        <option value="ENG">🇬🇧 English</option>
+        <option value="SWA">🇰🇪 Kiswahili</option>
+      </select>
+    </header>
+
+    <div class="library-map" id="mapGrid">
+      <div class="shelf" id="shelf-A">
+        SHELF A<br /><span style="font-size: 0.6rem">Sciences</span>
+      </div>
+      <div class="shelf" id="shelf-B">
+        SHELF B<br /><span style="font-size: 0.6rem">Humanities</span>
+      </div>
+      <div class="shelf" id="shelf-C">
+        SHELF C<br /><span style="font-size: 0.6rem">Languages</span>
+      </div>
+      <div class="shelf" id="shelf-D">
+        SHELF D<br /><span style="font-size: 0.6rem">Maths</span>
+      </div>
+      <div class="shelf" id="shelf-REF">
+        REF<br /><span style="font-size: 0.6rem">Past Papers</span>
+      </div>
+      <div class="shelf" id="shelf-TCH">
+        TEACHER<br /><span style="font-size: 0.6rem">Guides</span>
+      </div>
+    </div>
+
+    <div id="chat-window">
+      <div class="msg ai">
+        Hello! I am the Tenwek Library Assistant. I can help you find books,
+        revise for KCSE, or quiz you on any subject.
+      </div>
+    </div>
+
+    <div class="chips">
+      <div class="chip" onclick="quickAsk('Where is Fathers of Nations?')">
+        📚 Setbooks
+      </div>
+      <div
+        class="chip"
+        onclick="quickAsk('Give me a Biology Form 4 Quiz (5 Qs)')"
+      >
+        📝 Exam Mode
+      </div>
+      <div class="chip" onclick="quickAsk('Where are the KCSE Past Papers?')">
+        📄 Past Papers
+      </div>
+      <div class="chip" onclick="quickAsk('Explain the structure of the Atom')">
+        ⚛️ Chemistry
+      </div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-row">
+        <input
+          type="text"
+          id="userInput"
+          placeholder="Ask anything..."
+          onkeypress="if (event.key === 'Enter') handleInput();"
+        />
+        <button class="send" id="sendBtn" onclick="handleInput()">GO</button>
+      </div>
+
+      <div class="toolbar">
+        <div class="toggle-group">
+          <label style="display: flex; align-items: center; cursor: pointer">
+            <input
+              type="checkbox"
+              id="libMode"
+              onclick="toggleLibMode(event)"
+            />
+            <span style="margin-left: 5px">Librarian Mode</span>
+          </label>
+          <button
+            id="voiceBtn"
+            onclick="toggleVoice()"
+            style="
+              background: none;
+              border: 1px solid #444;
+              color: #aaa;
+              padding: 2px 8px;
+              border-radius: 10px;
+              cursor: pointer;
+            "
+          >
+            Voice: OFF
+          </button>
+        </div>
+
+        <div class="dropdown">
+          <span style="cursor: pointer">⚙️ Settings</span>
+          <div class="drop-content">
+            <button onclick="changePin()">🔐 Change PIN</button>
+            <button onclick="clearMemory()" style="color: var(--danger)">
+              🗑️ Clear Memory
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+
+      // --- CONFIGURATION ---
+      const GEMINI_KEY = "AIzaSyB90lUtWdBVQpX5ntSxeNw6MMuOOaesffs"; // Replace if needed
+      const genAI = new GoogleGenerativeAI(GEMINI_KEY);
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+      // --- STATE ---
+      let state = {
+        lang: "ENG",
+        voice: false,
+        pin: localStorage.getItem("ths_pin") || "4321",
+        memory:
+          localStorage.getItem("ths_data") ||
+          "Inventory: Biology Form 4 (Shelf A), History Form 2 (Shelf B), Math Form 1 (Shelf D).",
+      };
+
+      // --- MAIN LOGIC ---
+      window.handleInput = async () => {
+        const input = document.getElementById("userInput");
+        const query = input.value.trim();
+        const isLib = document.getElementById("libMode").checked;
+        if (!query) return;
+
+        // UI Updates
+        appendMsg(query, "user");
+        input.value = "";
+        resetMap(); // Clear previous highlights
+
+        if (isLib) {
+          // LIBRARIAN: FEED DATA
+          const time = new Date().toLocaleTimeString();
+          state.memory += `\n[${time}] ${query}`;
+          localStorage.setItem("ths_data", state.memory);
+          appendMsg("✅ System Updated. Location saved to memory.", "ai");
+        } else {
+          // STUDENT: ASK AI
+          const loaderId = appendMsg("", "ai dots");
+          await processQuery(query, loaderId);
+        }
+      };
+
+      async function processQuery(query, loaderId) {
+        const langInstruction =
+          state.lang === "SWA"
+            ? "Reply in Swahili/Sheng."
+            : "Reply in English.";
+
+        // INTELLIGENT PROMPT WITH MAP TRIGGERS
+        const prompt = `
+            You are the Tenwek High School Library AI.
+            Context: Kenyan 8-4-4 & CBC System.
+            Current Inventory: ${state.memory}.
+            User Query: "${query}"
+            Language: ${langInstruction}
+            
+            INSTRUCTIONS:
+            1. If the user asks for a book location, look at the Inventory.
+            2. CRITICAL: If you find the book/topic, add a hidden tag at the END of your response to light up the map.
+               - If Science/Biology/Physics/Chem -> append [MAP:A]
+               - If Humanities/History/Geo/CRE -> append [MAP:B]
+               - If Languages/English/Kiswahili -> append [MAP:C]
+               - If Math/Business -> append [MAP:D]
+               - If Past Papers/Reference -> append [MAP:REF]
+            3. If user asks for a QUIZ, generate 3 multiple choice questions with answers hidden at the bottom.
+            4. Keep answers short and helpful.
+        `;
+
+        try {
+          const result = await model.generateContent(prompt);
+          const text = result.response.text();
+
+          // PARSE MAP TRIGGERS
+          let cleanText = text;
+          const mapMatch = text.match(/\[MAP:(\w+)\]/);
+          if (mapMatch) {
+            highlightShelf(mapMatch[1]); // Light up the shelf
+            cleanText = text.replace(mapMatch[0], ""); // Remove tag from visible text
+          }
+
+          const loader = document.getElementById(loaderId);
+          loader.classList.remove("dots");
+          loader.innerHTML = marked.parse(cleanText);
+
+          // VOICE OUTPUT
+          if (state.voice) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.lang = state.lang === "SWA" ? "sw-KE" : "en-GB"; // Attempt generic Swahili accent
+            window.speechSynthesis.speak(utterance);
+          }
+        } catch (e) {
+          document.getElementById(loaderId).innerText =
+            "⚠️ Network Error. Try again.";
+        }
+      }
+
+      // --- MAP VISUALS ---
+      function highlightShelf(id) {
+        const shelf = document.getElementById(`shelf-${id}`);
+        if (shelf) shelf.classList.add("active");
+      }
+
+      function resetMap() {
+        document
+          .querySelectorAll(".shelf")
+          .forEach((s) => s.classList.remove("active"));
+      }
+
+      // --- UTILITIES ---
+      window.appendMsg = (txt, cls) => {
+        const div = document.createElement("div");
+        div.className = `msg ${cls}`;
+        div.innerHTML = txt;
+        const win = document.getElementById("chat-window");
+        win.appendChild(div);
+        win.scrollTop = win.scrollHeight;
+        return (div.id = "m" + Date.now());
+      };
+
+      window.quickAsk = (txt) => {
+        document.getElementById("userInput").value = txt;
+        window.handleInput();
+      };
+
+      window.toggleLibMode = (e) => {
+        const check = document.getElementById("libMode");
+        if (check.checked) {
+          const p = prompt("🔐 Enter Librarian PIN:");
+          if (p === state.pin) {
+            document.getElementById("statusText").innerText =
+              "LIBRARIAN MODE (Feeding Data)";
+            document.getElementById("statusText").style.color = "var(--accent)";
+            document.getElementById("userInput").placeholder =
+              "Enter book location (e.g. Bio F4 is on Shelf A)";
+          } else {
+            alert("Wrong PIN!");
+            check.checked = false;
+            e.preventDefault();
+          }
+        } else {
+          document.getElementById("statusText").innerText = "Student Mode";
+          document.getElementById("statusText").style.color = "#aaa";
+          document.getElementById("userInput").placeholder = "Ask anything...";
+        }
+      };
+
+      window.changePin = () => {
+        const newP = prompt("Enter new 4-digit PIN:");
+        if (newP && newP.length >= 4) {
+          state.pin = newP;
+          localStorage.setItem("ths_pin", newP);
+          alert("PIN Changed!");
+        }
+      };
+
+      window.clearMemory = () => {
+        if (confirm("Delete all library data?")) {
+          localStorage.removeItem("ths_data");
+          location.reload();
+        }
+      };
+
+      window.toggleVoice = () => {
+        state.voice = !state.voice;
+        const btn = document.getElementById("voiceBtn");
+        btn.innerText = state.voice ? "Voice: ON 🔊" : "Voice: OFF";
+        btn.style.color = state.voice ? "var(--primary)" : "#aaa";
+        btn.style.borderColor = state.voice ? "var(--primary)" : "#444";
+      };
+
+      window.changeLang = () => {
+        state.lang = document.getElementById("langSelect").value;
+        appendMsg(
+          state.lang === "SWA"
+            ? "Lugha imebadilishwa: Kiswahili."
+            : "Language switched: English.",
+          "ai",
+        );
+      };
+    </script>
+  </body>
+</html>
